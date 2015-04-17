@@ -10,9 +10,9 @@ known_md5s = {'sqlite': {'AvianBodySize' : '72256f681cdce96eba32d4ece270bcb2',
               'csv': {'AvianBodySize' : 'f42702a53e7d99d16e909676f30e5aa8',
                       'DelMoral2010' : '606f97c3ddbfd6d63b474bc76d01646a',
                       'MoM2003' : 'ef0a31c132cfe1c6594739c872f70f54'},
-              'mysql': {'AvianBodySize' : 'f60ac93d9be4671dbef77da9d10676b8',
-                        'DelMoral2010' : 'f241fd296130512d4e1029376b58a4ea',
-                        'MoM2003' : '9728728d72af4c21a2a6e29fec3edb48'},
+              'mysql': {'AvianBodySize' : 'bf2ee58f570d7455d30c01a170142b78',
+                        'DelMoral2010' : 'f38d9c3828cfa847aa637708fd07ad13',
+                        'MoM2003' : '9c1242025de7902bcbec49fe50733d04'},
               'postgres': {'AvianBodySize' : '60c252af74d914e3c15fa9af43edefca',
                          'DelMoral2010' : '1e8de8fa3ddbd4ca3a7cab921926e70e',
                          'MoM2003' : 'a55c8308722c8e20950e0d1e6d9639e6'}}
@@ -63,11 +63,23 @@ class CSVRegression(TestCase):
 
 class MySQLRegression(TestCase):
     def check_mysql_regression(self, dataset, known_md5):
-        """Check for regression for a particular dataset imported to sqlite"""
+        """Check for regression for a particular dataset imported to MySQL"""
+        os.system("rm -rf /tmp/retrieverdump")
+        os.system("rm output_file")
+
+        # Permissions for folder must allow writing by both mysql and current users
+        os.system("mkdir /tmp/retrieverdump")
+        os.system("chmod 777 /tmp/retrieverdump")
+
         os.system('mysql -u travis -Bse "DROP DATABASE IF EXISTS testdb"') # installing over an existing database changes the dump
         os.system("retriever install mysql %s -u travis -d testdb" % dataset)   #user 'travis' for Travis CI
-        os.system("mysqldump testdb -u travis --compact --compatible=no_table_options --no-create-db --no-create-info --result-file=output_file")
+        os.system("""mysqldump -u travis -t -T /tmp/retrieverdump/ testdb --fields-terminated-by=',' --fields-optionally-enclosed-by='"' --lines-terminated-by='\n'""")
+        os.system("cat `ls -- /tmp/retrieverdump/*.txt | sort` > output_file") # cat sort order is finicky, so force it to sort
         current_md5 = getmd5('output_file')
+        os.system("head /tmp/retrieverdump/species.txt")
+        os.system("md5sum /tmp/retrieverdump/*.txt")
+        #os.system("rm -rf /tmp/retrieverdump")
+        #os.system("rm output_file")
         assert current_md5 == known_md5
 
 
@@ -83,8 +95,8 @@ class PostgreSQLRegression(TestCase):
 dbms_test_classes = {'sqlite': SqliteRegression, 'csv': CSVRegression,
                      'mysql': MySQLRegression, 'postgres': PostgreSQLRegression}
 
-for dbms in known_md5s:
-    for dataset in known_md5s[dbms]:
+for dbms in ['mysql']:
+    for dataset in ['DelMoral2010']:
         stub_test = _test_factory('check_%s_regression' % dbms, 'test_%s' % dataset,
                                   dataset, known_md5s[dbms][dataset])
         setattr(dbms_test_classes[dbms], stub_test.__name__, stub_test)
