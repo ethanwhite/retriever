@@ -22,6 +22,7 @@ def setup_module():
     """Update retriever scripts and cd to test directory to find data"""
     os.chdir("./test/")
     os.system("retriever update")
+    os.system("rm ~/.retriever/scripts/EA_del_moral_2010.*")
 
 def teardown_module():
     """Cleanup temporary output files after testing and return to root directory"""
@@ -76,6 +77,7 @@ class MySQLRegression(TestCase):
         os.system("""mysqldump -u travis -t -T /tmp/retrieverdump/ testdb --fields-terminated-by=',' --fields-optionally-enclosed-by='"' --lines-terminated-by='\n'""")
         os.system("cat `ls -- /tmp/retrieverdump/*.txt | sort` > output_file") # cat sort order is finicky, so force it to sort
         current_md5 = getmd5('output_file')
+        os.system("head /tmp/retrieverdump/species.txt")
         os.system("rm -rf /tmp/retrieverdump")
         os.system("rm output_file")
         assert current_md5 == known_md5
@@ -92,9 +94,9 @@ class PostgreSQLRegression(TestCase):
 
 dbms_test_classes = {'sqlite': SqliteRegression, 'csv': CSVRegression,
                      'mysql': MySQLRegression, 'postgres': PostgreSQLRegression}
-
-for dbms in known_md5s:
-    for dataset in known_md5s[dbms]:
+os.system("rm ~/.retriever/scripts/EA_del_moral_2010*")
+for dbms in ['mysql']:
+    for dataset in ['DelMoral2010']:
         stub_test = _test_factory('check_%s_regression' % dbms, 'test_%s' % dataset,
                                   dataset, known_md5s[dbms][dataset])
         setattr(dbms_test_classes[dbms], stub_test.__name__, stub_test)
