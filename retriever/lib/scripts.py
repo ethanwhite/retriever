@@ -16,17 +16,13 @@ def MODULE_LIST(force_compile=False):
     loaded_scripts = []
 
     for search_path in [search_path for search_path in SCRIPT_SEARCH_PATHS if exists(search_path)]:
-        to_compile = [
-            file for file in os.listdir(search_path) if file[-5:] == ".json" and
-            file[0] != "_" and (
-                (not isfile(join(search_path, file[:-5] + '.py'))) or (
-                    isfile(join(search_path, file[:-5] + '.py')) and (
-                        getmtime(join(search_path, file[:-5] + '.py')) < getmtime(
-                            join(search_path, file)))) or force_compile)]
-
+        to_compile = [file for file in os.listdir(search_path) if file[-5:] == ".json" and file[0] != "_"]
         for script in to_compile:
             script_name = '.'.join(script.split('.')[:-1])
-            compile_json(join(search_path, script_name))
+            if script_name not in loaded_scripts:
+                compiled_script = compile_json(join(search_path, script_name))
+                modules.append(compiled_script)
+                loaded_scripts.append(script_name)
 
         files = [file for file in os.listdir(search_path)
                  if file[-3:] == ".py" and file[0] != "_" and

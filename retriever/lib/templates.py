@@ -149,6 +149,6 @@ class HtmlTableTemplate(Script):
 
 
 TEMPLATES = [
-    ("Basic Text", BasicTextTemplate),
-    ("HTML Table", HtmlTableTemplate),
+    ("default", BasicTextTemplate),
+    ("html_table", HtmlTableTemplate),
 ]
