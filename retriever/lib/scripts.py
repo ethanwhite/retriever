@@ -35,7 +35,7 @@ def MODULE_LIST(force_compile=False):
                 file, pathname, desc = imp.find_module(script_name, [search_path])
                 try:
                     new_module = imp.load_module(script_name, file, pathname, desc)
-                    if hasattr(new_module.SCRIPT, "retriever_minimum_version"):
+                    if hasattr(new_module, "retriever_minimum_version"):
                         # a script with retriever_minimum_version should be loaded
                         # only if its compliant with the version of the retriever
                         if not parse_version(VERSION) >= parse_version("{}".format(
@@ -55,7 +55,7 @@ def MODULE_LIST(force_compile=False):
 
 
 def SCRIPT_LIST(force_compile=False):
-    return [module.SCRIPT for module in MODULE_LIST(force_compile)]
+    return MODULE_LIST(force_compile)
 
 
 def get_script(dataset):
