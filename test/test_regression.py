@@ -122,9 +122,9 @@ def test_postgres_regression(dataset, expected, tmpdir):
 @pytest.mark.parametrize("dataset, expected", db_md5)
 def test_mysql_regression(dataset, expected, tmpdir):
     """Check for mysql regression."""
-    os.system('mysql -u travis -Bse "DROP DATABASE IF EXISTS testdb"')
+    os.system('mysql -u root -Bse "DROP DATABASE IF EXISTS testdb"')
     mysql_engine.opts = {'engine': 'mysql',
-                         'user': 'travis',
+                         'user': 'root',
                          'password': '',
                          'host': 'localhost',
                          'port': 3306,
