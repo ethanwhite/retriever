@@ -28,6 +28,11 @@ install:
 
 script:
   - py.test -v --cov=retriever
+  # Also test 2.0.0 to avoid backwards compatibility breaks
+  - pip install retriever==2.0.0
+  - wget https://raw.githubusercontent.com/weecology/retriever/v2.0.0/test/test_regression_cli.py
+  - cp test_regression_cli.py test/
+  - py.test -v test/test_regression_cli.py
 
 # database setup
 before_script:
